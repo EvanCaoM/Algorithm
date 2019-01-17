@@ -1,4 +1,4 @@
-package MazeGenerator;
+package MineSweeper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,8 +34,9 @@ public class AlgoFrame extends JFrame{
     public int getCanvasWidth(){return canvasWidth;}
     public int getCanvasHeight(){return canvasHeight;}
 
-    private MazeData data;
-    public void render(MazeData data){
+    // TODO: 设置自己的数据
+    private Object data;
+    public void render(Object data){
         this.data = data;
         repaint();
     }
@@ -61,22 +62,7 @@ public class AlgoFrame extends JFrame{
             g2d.addRenderingHints(hints);
 
             // 具体绘制
-            int w = canvasWidth / data.M();
-            int h = canvasHeight / data.N();
-
-            for (int i = 0; i < data.N(); i++) {
-                for (int j = 0; j < data.M(); j++) {
-                    if (data.inMist[i][j])
-                        AlgoVisHelper.setColor(g2d, AlgoVisHelper.Black);
-                    else if (data.maze[i][j] == MazeData.WALL)
-                        AlgoVisHelper.setColor(g2d, AlgoVisHelper.LightBlue);
-                    else
-                        AlgoVisHelper.setColor(g2d, AlgoVisHelper.White);
-                    if (data.path[i][j])
-                        AlgoVisHelper.setColor(g2d, AlgoVisHelper.Yellow);
-                    AlgoVisHelper.fillRectangle(g2d, j * w, i * h, w, h);
-                }
-            }
+            // TODO： 绘制自己的数据data
         }
 
         @Override

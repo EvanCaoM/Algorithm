@@ -2,6 +2,7 @@ package MazeGenerator;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.util.LinkedList;
 import java.util.Stack;
@@ -39,8 +40,53 @@ public class AlgoVisualizer {
 
 //        go(data.getEntranceX(), data.getEntranceY() + 1);
 //        goWithStack();
-        goWithQueue();
+//        goWithQueue();
+//        goWithRandomQueue();
+        goWithRandomInAndOut();
         setData(-1, -1);
+
+    }
+
+    private void goWithRandomInAndOut(){
+        RandomInAndOut<Position> queue = new RandomInAndOut<Position>();
+        Position first = new Position(data.getEntranceX(), data.getEntranceY() + 1);
+        queue.add(first);
+        data.visited[first.getX()][first.getY()] = true;
+        data.openMist(first.getX(),first.getY());
+        while (queue.size() > 0){
+            Position curPos = queue.remove();
+            for (int i = 0; i < 4; i++) {
+                int newX = curPos.getX() + d[i][0] * 2;
+                int newY = curPos.getY() + d[i][1] * 2;
+                if (data.inArea(newX, newY) && !data.visited[newX][newY]) {
+                    queue.add(new Position(newX, newY));
+                    data.visited[newX][newY] = true;
+                    data.openMist(newX, newY);
+                    setData(curPos.getX() + d[i][0], curPos.getY() + d[i][1]);
+                }
+            }
+        }
+    }
+
+    private void goWithRandomQueue(){
+        RandomQueue<Position> queue = new RandomQueue<Position>();
+        Position first = new Position(data.getEntranceX(), data.getEntranceY() + 1);
+        queue.add(first);
+        data.visited[first.getX()][first.getY()] = true;
+        data.openMist(first.getX(),first.getY());
+        while (queue.size() > 0){
+            Position curPos = queue.remove();
+            for (int i = 0; i < 4; i++) {
+                int newX = curPos.getX() + d[i][0] * 2;
+                int newY = curPos.getY() + d[i][1] * 2;
+                if (data.inArea(newX, newY) && !data.visited[newX][newY]) {
+                    queue.add(new Position(newX, newY));
+                    data.visited[newX][newY] = true;
+                    data.openMist(newX, newY);
+                    setData(curPos.getX() + d[i][0], curPos.getY() + d[i][1]);
+                }
+            }
+        }
     }
 
     private void goWithQueue(){
@@ -94,9 +140,6 @@ public class AlgoVisualizer {
         }
     }
 
-
-
-
     private void setData(int x, int y){
         if (data.inArea(x, y))
             data.maze[x][y] = MazeData.ROAD;
@@ -104,8 +147,50 @@ public class AlgoVisualizer {
         AlgoVisHelper.pause(DELAY);
     }
 
-    // TODO: 根据情况决定是否实现键盘鼠标等交互事件监听器类
-    private class AlgoKeyListener extends KeyAdapter{ }
+    private class AlgoKeyListener extends KeyAdapter{
+        @Override
+        public void keyReleased(KeyEvent event){
+            if (event.getKeyChar() == ' '){
+                for (int i = 0; i < data.N(); i++) {
+                    for (int j = 0; j < data.M(); j++) {
+                        data.visited[i][j] = false;
+                    }
+                }
+                new Thread(() -> {
+                    goWithSolver(data.getEntranceX(), data.getEntranceY());
+                }).start();
+            }
+        }
+    }
+
+    private boolean goWithSolver(int x, int y){
+        if (!data.inArea(x,y))
+            throw new IllegalArgumentException("x,y are illegal!");
+        data.visited[x][y] = true;
+        setDataWithSolver(x, y, true);
+        if (x != data.getExitX() || y != data.getExitY()) {
+            for (int i = 0; i < 4; i++) {
+                int newX = x + d[i][0];
+                int newY = y + d[i][1];
+                if (data.inArea(newX, newY) && data.getMaze(newX, newY) == MazeData.ROAD && !data.visited[newX][newY])
+                    if (goWithSolver(newX, newY))
+                        return true;
+            }
+            setDataWithSolver(x, y, false);
+            return false;
+        }
+        else
+            return true;
+    }
+
+    private void setDataWithSolver(int x, int y, boolean isPath){
+        if (data.inArea(x, y)) {
+            data.path[x][y] = isPath;
+        }
+        frame.render(data);
+        AlgoVisHelper.pause(DELAY);
+    }
+
     private class AlgoMouseListener extends MouseAdapter{ }
 
     public static void main(String[] args) {

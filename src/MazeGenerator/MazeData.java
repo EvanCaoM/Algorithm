@@ -8,6 +8,8 @@ public class MazeData {
     private int N, M;
     public char[][] maze;
     public boolean[][] visited;
+    public boolean[][] inMist;
+    public boolean[][] path;
 
     private int entranceX, entranceY;
     private int exitX, exitY;
@@ -22,6 +24,8 @@ public class MazeData {
 
         maze = new char[N][M];
         visited = new boolean[N][M];
+        inMist = new boolean[N][M];
+        path = new boolean[N][M];
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {
                 if (i % 2 == 1 && j % 2 == 1)
@@ -29,6 +33,8 @@ public class MazeData {
                 else
                     maze[i][j] = WALL;
                 visited[i][j] = false;
+                inMist[i][j] = true;
+                path[i][j] = false;
             }
             entranceX = 1;
             entranceY = 0;
@@ -37,11 +43,23 @@ public class MazeData {
 
             maze[entranceX][entranceY] = ROAD;
             maze[exitX][exitY] = ROAD;
+
         }
     }
 
     public boolean inArea(int x, int y){
         return x >= 0 && x < N && y >= 0 && y < M;
+    }
+
+    public void openMist(int x, int y){
+        if (!inArea(x, y))
+            throw new IllegalArgumentException("x or y is illegal!");
+        for (int i = x - 1; i <= x + 1; i++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                if (inArea(i, j))
+                    inMist[i][j] = false;
+            }
+        }
     }
 
     public int N(){
@@ -66,5 +84,11 @@ public class MazeData {
 
     public int getExitY() {
         return exitY;
+    }
+
+    public char getMaze(int i, int j) {
+        if (!inArea(i,j))
+            throw new IllegalArgumentException("i or j is out of index in getMaze!");
+        return maze[i][j];
     }
 }
